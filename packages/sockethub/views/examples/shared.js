@@ -31,25 +31,25 @@ ExamplesShared.prototype.__displayUnknownContent = function (msg) {
 ExamplesShared.prototype.processIncomingMessage = function (msg) {
   console.log('incoming message: ', msg);
   if (msg['@type'] === 'observe') {
-    $('#messages').append($('<li>').text(` users in ${msg.actor.displayName}`))
+    $('#messages').append($('<li>').text(` users in ${msg.actor.displayName|| msg.actor['@id']}`))
       .append($('<li>').text(`  [ ${msg.object.members.join(', ')} ]`));
   } else if ((msg['@type'] === 'pong') || (msg['@type'] === 'pong')) {
     $('#messages').append($('<li>').text(
       `${msg['@type']} received from ${msg.actor['@id']} at ${msg.published}`));
   } else if ((msg['@type'] === 'update') && (msg.object['@type'] === 'address')) {
     $('#messages').append($('<li>').text(
-      `${msg.actor.displayName} is now known as ${msg.target.displayName}`));
+      `${msg.actor.displayName|| msg.actor['@id']} is now known as ${msg.target.displayName|| msg.actor['@id']}`));
   } else if ((msg['@type'] === 'update') && (msg.object['@type'] === 'presence')) {
     this.__displayPresenceUpdate(msg);
   } else if ((msg['@type'] === 'add' || msg['@type'] === 'remove') &&
              (msg.object['@type'] === 'relationship')) {
     const action = msg['@type'] === 'add' ? 'set' : 'removed';
     $('#messages').append($('<li>').text(
-      `${msg.actor.displayName} ${action} ${msg.object.relationship} of 
+      `${msg.actor.displayName|| msg.actor['@id']} ${action} ${msg.object.relationship} of
       ${msg.object.subject.role}`));
   } else if (msg['@type'] === 'join') {
     $('#messages').append($('<li>').text(
-      `${msg.actor.displayName} has joined ${msg.target.displayName}`));
+      `${msg.actor.displayName || msg.actor['@id']} has joined ${msg.target.displayName || msg.actor['@id']}`));
   } else if ((msg['@type'] === 'announce') && (msg.actor['@type'] === 'service')) {
     $('#messages').append($('<li>').text(`connected to ${msg.actor['@id']}`));
   } else if (msg['@type'] === 'error') {
@@ -58,10 +58,10 @@ ExamplesShared.prototype.processIncomingMessage = function (msg) {
     console.log('close event received... offline.');
   } else if (msg.object && msg.object['@type'] === 'me') {
     $('#messages').append($('<li>').text(
-      `* ${msg.actor.displayName} ${msg.object.content}`));
+      `* ${msg.actor.displayName|| msg.actor['@id']} ${msg.object.content}`));
   } else if (msg.object && msg.object['@type'] === 'notice') {
     $('#messages').append($(
-      '<li>').text(`NOTICE from ${msg.actor.displayName}: ${msg.object.content}`));
+      '<li>').text(`NOTICE from ${msg.actor.displayName|| msg.actor['@id']}: ${msg.object.content}`));
   } else if (msg.object && msg.object.content) {
     this.__displayMessageContent(msg);
   } else {
