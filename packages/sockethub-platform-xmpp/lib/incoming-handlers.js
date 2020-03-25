@@ -30,47 +30,6 @@ class IncomingHandlers {
     this.session = referenceProtection(session);
   }
 
-  buddy(from, state, statusText) {
-    if (from !== this.session.actor['@id']) {
-      this.session.debug('received buddy presence update: ' + from + ' - ' + state);
-      this.session.sendToClient({
-        '@type': 'update',
-        actor: { '@id': from },
-        target: this.session.actor,
-        object: {
-          '@type': 'presence',
-          status: statusText,
-          presence: state
-        }
-      });
-    }
-  }
-
-  buddyCapabilities(id, capabilities) {
-    this.session.debug('received buddyCapabilities: ' + id);
-  }
-
-  chat(from, message) {
-    this.session.debug("received chat message from " + from);
-    this.session.sendToClient({
-      '@type': 'send',
-      actor: {
-        '@type': 'person',
-        '@id': from
-      },
-      target: this.session.actor,
-      object: {
-        '@type': 'message',
-        content: message,
-        '@id': nextId()
-      }
-    });
-  }
-
-  chatstate(from, name) {
-    this.session.debug('received chatstate event: ' + from, name);
-  }
-
   close() {
     this.session.debug('received close event with no handler specified');
     this.session.sendToClient({
@@ -97,68 +56,9 @@ class IncomingHandlers {
     }
   }
 
-  groupBuddy(id, groupBuddy, state, statusText) {
-    this.session.debug('received groupbuddy event: ' + id);
-    this.session.sendToClient({
-      '@type': 'update',
-      actor: {
-        '@id': `${id}/${groupBuddy}`,
-        '@type': 'person',
-        displayName: groupBuddy
-      },
-      target: {
-        '@id': id,
-        '@type': 'room'
-      },
-      object: {
-        '@type': 'presence',
-        status: statusText,
-        presence: state
-      }
-    });
-  }
-
-  groupChat(room, from, message, stamp) {
-    this.session.debug('received groupchat event: ' + room, from, message, stamp);
-    this.session.sendToClient({
-      '@type': 'send',
-      actor: {
-        '@type': 'person',
-        '@id': from
-      },
-      target: {
-        '@type': 'room',
-        '@id': room
-      },
-      object: {
-        '@type': 'message',
-        content: message,
-        '@id': nextId()
-      }
-    });
-  }
-
   online() {
     this.session.debug('online');
     this.session.debug('reconnectioned ' + this.session.actor['@id']);
-  }
-
-  subscribe(from) {
-    this.session.debug('received subscribe request from ' + from);
-    this.session.sendToClient({
-      '@type': "request-friend",
-      actor: { '@id': from },
-      target: this.session.actor
-    });
-  }
-
-  unsubscribe(from) {
-    this.session.debug('received unsubscribe request from ' + from);
-    this.session.sendToClient({
-      '@type': "remove-friend",
-      actor: { '@id': from },
-      target: this.session.actor
-    });
   }
 
   /**
@@ -256,36 +156,6 @@ class IncomingHandlers {
       }
     // } else {
     //   this.session.debug("got XMPP unknown stanza... " + stanza);
-    }
-  }
-
-  roomAttendance(stanza) {
-    const query = stanza.getChild('query');
-    if (query) {
-      let members = [];
-      const entries = query.getChildren('item');
-      for (let e in entries) {
-        if (!entries.hasOwnProperty(e)) {
-          continue;
-        }
-        members.push(entries[e].attrs.name);
-      }
-
-      this.session.sendToClient({
-        '@type': 'observe',
-        actor: {
-          '@id': stanza.attrs.from,
-          '@type': 'room'
-        },
-        target: {
-          '@id': stanza.attrs.to,
-          '@type': 'person'
-        },
-        object: {
-          '@type': 'attendance',
-          members: members
-        }
-      });
     }
   }
 }
